@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script defer src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1/web3.min.js"></script>
+</head>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #accountDisplay, #txHashDisplay {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <button id="connectButton">连接账户</button>
+    <button id="payButton" >发起支付 0.0003 ETH</button>
+    <div id="accountDisplay"></div>
+    <div id="txHashDisplay"></div>
+    <div>------------------------------------</div>
+    <button id="page2">方式2</button>
+
+    <script>
+        document.getElementById('page2').onclick = async () => {
+            const mobileLink = "/deepLink.html"; // 方式2
+                window.location.href = mobileLink;
+            };
+        const contractAddress = '0xf24A01aE29Dec4629DFB4170647C4eD4EFc392cD'; // 替换为您自己的合约地址
+        const amountInEth = 0.0003;
+
+        // 检查 MetaMask 是否安装
+        document.getElementById('connectButton').onclick = async () => {
+            if (typeof window.ethereum === 'undefined') {
+                const currentPageUrl = window.location.href;
+                const mobileLink = `https://metamask.app.link/dapp/${encodeURIComponent(currentPageUrl.substr(6).replaceAll('/',''))}`;
+                //const mobileLink = "https://metamask.app.link/dapp/nchao.site/metamask.html"; // 使用指定的 DApp URL
+                window.location.href = mobileLink;
+                return;
+            }
+            const accounts = await connectAccount();
+            if (!accounts || accounts.length === 0) {
+                alert("未连接账户或用户拒绝连接");
+                return;
+            }
+
+            const userAddress = accounts[0]; // 获取用户地址
+            document.getElementById('accountDisplay').innerText = `连接的账户地址: ${userAddress}`;
+        };
+
+        document.getElementById('payButton').onclick = async () => {
+            const userAddress = document.getElementById('accountDisplay').innerText.replace('连接的账户地址: ', '');
+            if (!userAddress || userAddress.length === 0) {
+                alert("先点击连接账户");
+                return;
+            }
+            try {
+                const txHash = await sendTransaction(userAddress);
+                document.getElementById('txHashDisplay').innerText = `交易成功，哈希值是: ${txHash}`;
+            } catch (error) {
+                console.error("交易失败:", error);
+                alert("发送交易失败");
+            }
+        };
+
+        async function connectAccount() {
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                return accounts;
+            } catch (error) {
+                console.error("连接账户失败:", error);
+                return [];
+            }
+        }
+
+        async function sendTransaction(userAddress) {
+            const valueInWei = (amountInEth * Math.pow(10, 18)).toString(16); // 转换为 Wei，以十六进制字符串形式返回
+            const transactionParameters = {
+                to: contractAddress, // 目标合约地址
+                from: userAddress, // 发送者地址
+                value: '0x' + valueInWei, // 发送的 ETH 金额
+            };
+
+            // 发送交易请求
+            return await window.ethereum.request({
+                method: 'eth_sendTransaction',
+                params: [transactionParameters],
+            });
+        }
+    </script>
+</body>
+</html>

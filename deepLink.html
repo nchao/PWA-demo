@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script defer src="app.js"></script>
+    <script src="metamask-sdk.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #accountDisplay, #txHashDisplay {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="connect()">连接账户</button>
+    <button onclick="addEthereumChain()" hidden = 'true'>ADD ETHEREUM CHAIN</button>
+    <button onclick="sendPayment()">发起交易</button>
+
+    <div id="accountDisplay"></div>
+    <div id="txHashDisplay"></div>
+
+    <script>
+        const sdk = new MetaMaskSDK.MetaMaskSDK({
+            logging: {
+                developerMode: true,
+            },
+            dappMetadata: {
+                name: 'Pure JS example',
+            },
+        });
+
+        let provider;
+        let userAddress;
+
+        function connect() {
+            sdk.connect()
+                .then((res) => {
+                    provider = sdk.getProvider();
+                    userAddress = res[0]; // Save the user's address
+                    document.getElementById('accountDisplay').innerText = `Connected Account: ${userAddress}`;
+                })
+                .catch((e) => console.log('request accounts ERR', e));
+        }
+
+        function addEthereumChain() {
+            provider
+                .request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x89',
+                        chainName: 'Polygon',
+                        blockExplorerUrls: ['https://polygonscan.com'],
+                        nativeCurrency: { symbol: 'POL', decimals: 18 },
+                        rpcUrls: ['https://polygon-rpc.com/'],
+                    }],
+                })
+                .then((res) => console.log('add', res))
+                .catch((e) => console.log('ADD ERR', e));
+        }
+
+        async function sendPayment() {
+            if (!userAddress) {
+                alert("请先连接 MetaMask！");
+                return;
+            }
+
+            const recipientAddress = '0xA863BAc883A31Ba40c90fcc94da99b3D23c3AE1c'; // 替换为实际接收者地址
+            const amountInEth = 0.0001; // 发送的以太币数量（以 ETH 为单位）
+
+            const transactionParameters = {
+                to: recipientAddress, // 目标地址
+                from: userAddress, // 发送者地址
+                value: (amountInEth * 1e18).toString(16), // 转换为 Wei，使用十六进制字符串
+            };
+
+            try {
+                const txHash = await provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [transactionParameters],
+                });
+                document.getElementById('txHashDisplay').innerText = `Transaction Hash: ${txHash}`; // 显示交易哈希
+            } catch (error) {
+                console.error(error);
+                alert("支付失败，请检查错误并重试。");
+            }
+        }
+    </script>
+</body>
+</html>
+
