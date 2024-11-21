@@ -68,13 +68,17 @@
         let userAddress;
 
         function connect() {
-            sdk.connect()
-                .then((res) => {
-                    provider = sdk.getProvider();
-                    userAddress = res[0]; // Save the user's address
-                    document.getElementById('accountDisplay').innerText = `Connected Account: ${userAddress}`;
-                })
-                .catch((e) => console.log('request accounts ERR', e));
+            try{
+                sdk.connect()
+                    .then((res) => {
+                        provider = sdk.getProvider();
+                        userAddress = res[0]; // Save the user's address
+                        document.getElementById('accountDisplay').innerText = `Connected Account: ${userAddress}`;
+                    })
+                    .catch((e) => alert.log('request accounts ERR', e));
+            } catch (err) {
+                alert.error(err);
+            }
         }
 
         function addEthereumChain() {
@@ -90,7 +94,7 @@
                     }],
                 })
                 .then((res) => console.log('add', res))
-                .catch((e) => console.log('ADD ERR', e));
+                .catch((e) => alert.log('ADD ERR', e));
         }
 
         async function sendPayment() {
@@ -132,7 +136,7 @@
                 });
                 document.getElementById('siweResult').innerHTML = sign; // 更新签名结果
             } catch (err) {
-                console.error(err);
+                alert.error(err);
                 document.getElementById('siweResult').innerHTML = `Error: ${err.message}`;
             }
         }
