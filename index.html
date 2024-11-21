@@ -124,22 +124,30 @@
             }
         }
         // 签名函数
-        function sign(type){
+        function sign(type) {
             try {
                 const domain = window.location.host;
                 const currentDate = new Date().toISOString();
-                const siweMessage =type == 1?"我是要被签名的信息"
-                    :`${domain} wants you to sign in with your Ethereum account:\n${userAddress}\n\nI accept the MetaMask Terms of Service: https://community.metamask.io/tos\n\nURI: https://${domain}\nVersion: 1\nChain ID: 1\nNonce: 32891757\nIssued At: ${currentDate}`;
-                const sign = provider.request({
+                const siweMessage = type == 1 ? "我是要被签名的信息" : 
+                    `${domain} wants you to sign in with your Ethereum account:\n${userAddress}\n\nI accept the MetaMask Terms of Service: https://community.metamask.io/tos\n\nURI: https://${domain}\nVersion: 1\nChain ID: 1\nNonce: 32891757\nIssued At: ${currentDate}`;
+
+                // 请求签名并处理 Promise
+                provider.request({
                     method: 'personal_sign',
                     params: [siweMessage, userAddress],
+                }).then(sign => {
+                    // 更新签名结果
+                    document.getElementById('siweResult').innerHTML = sign; 
+                }).catch(err => {
+                    console.error(err); // 输出错误到控制台
+                    document.getElementById('siweResult').innerHTML = `Error: ${err.message}`;
                 });
-                document.getElementById('siweResult').innerHTML = sign; // 更新签名结果
             } catch (err) {
-                alert.error(err);
+                console.error(err); // 输出错误到控制台
                 document.getElementById('siweResult').innerHTML = `Error: ${err.message}`;
             }
         }
+
     
     </script>
 </body>
