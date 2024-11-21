@@ -41,6 +41,9 @@
     <button onclick="connect()">连接账户</button>
     <button onclick="addEthereumChain()" hidden = 'true'>ADD ETHEREUM CHAIN</button>
     <button onclick="sendPayment()">发起交易</button>
+    <button onclick="sign(1)">签名</button>
+    <button onclick="sign(2)">登录</button>
+    <div id="siweResult"></div>
 
     <div id="accountDisplay"></div>
     <div id="txHashDisplay"></div>
@@ -110,6 +113,24 @@
                 alert("支付失败，请检查错误并重试。");
             }
         }
+        // 签名函数
+        function sign(type){
+            try {
+                const domain = window.location.host;
+                const currentDate = new Date().toISOString();
+                const siweMessage =type == 1?"我是要被签名的信息"
+                    :`${domain} wants you to sign in with your Ethereum account:\n${userAddress}\n\nI accept the MetaMask Terms of Service: https://community.metamask.io/tos\n\nURI: https://${domain}\nVersion: 1\nChain ID: 1\nNonce: 32891757\nIssued At: ${currentDate}`;
+                const sign = provider.request({
+                    method: 'personal_sign',
+                    params: [siweMessage, userAddress],
+                });
+                document.getElementById('siweResult').innerHTML = sign; // 更新签名结果
+            } catch (err) {
+                console.error(err);
+                document.getElementById('siweResult').innerHTML = `Error: ${err.message}`;
+            }
+        }
+    
     </script>
 </body>
 </html>
