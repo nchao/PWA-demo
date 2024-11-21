@@ -51,7 +51,7 @@
         document.getElementById('connectButton').onclick = async () => {
             if (typeof window.ethereum === 'undefined') {
                 const currentPageUrl = window.location.href;
-                const mobileLink = `https://metamask.app.link/dapp/${encodeURIComponent(currentPageUrl.substr(6).replaceAll('/',''))}`;
+                const mobileLink = `https://metamask.app.link/dapp/pwa.nchao.site`;
                 //const mobileLink = "https://metamask.app.link/dapp/nchao.site/metamask.html"; // 使用指定的 DApp URL
                 window.location.href = mobileLink;
                 return;
