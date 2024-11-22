@@ -38,6 +38,9 @@
     </style>
 </head>
 <body>
+    <button id="checkButton">检查 MetaMask</button>
+    <div id="result"></div>
+    <div>------------------------------------</div>
     <button onclick="connect()">连接账户</button>
     <button onclick="addEthereumChain()" hidden = 'true'>ADD ETHEREUM CHAIN</button>
     <button onclick="sendPayment()">发起交易</button>
@@ -64,8 +67,22 @@
             },
         });
 
-        let provider;
+        let provider = sdk.getProvider();
         let userAddress;
+
+         // 检查 MetaMask 应用是否已安装
+         function checkMetaMaskAppInstallation() {
+            const resultDiv = document.getElementById('result');
+            if (typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask) {
+                resultDiv.innerText = "MetaMask is installed!";
+            } else {
+                resultDiv.innerText = "MetaMask is not installed. Please install it.";
+                alert("请安装 MetaMask 扩展或应用以继续使用此功能。");
+            }
+        }
+
+        // 为按钮添加事件监听
+        document.getElementById('checkButton').addEventListener('click', checkMetaMaskAppInstallation);
 
         function connect() {
             try{
